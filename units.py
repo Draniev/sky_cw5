@@ -47,9 +47,14 @@ class BaseUnit(ABC):
     def set_armor(self, armor: Armor):
         self.armor = armor
 
+    def set_skill(self, skill: AbstractSkill):
+        self.skill = skill
+
     def hit(self, target: 'BaseUnit'):
+        "Наносит удар по противнику оружием"
+
         if self.stamina < self.weapon.stamina_per_hit:
-            self._regenerate_stamina('pass')
+            self._regen_stamina('pass')
             return (f"{self.name} вздернул свой {self.weapon.name}, "
                     "но так устал, что не смог попасть по противнику")
 
@@ -58,7 +63,7 @@ class BaseUnit(ABC):
         full_damage = random_damage * self.attack_mod
         caused_damage = target._get_damage(full_damage)
 
-        self._regenerate_stamina('hit')
+        self._regen_stamina('hit')
         if caused_damage == 0:
             return (f"{self.name} используя {self.weapon.name} "
                     f"наносит удар, но соперник уворачивается"
@@ -81,16 +86,20 @@ class BaseUnit(ABC):
         else:
             self.health -= get_damage
 
-        self._regenerate_stamina('defence')
+        self._regen_stamina('defence')
         return get_damage
 
-    def _regenerate_stamina(self, mod: Literal['hit', 'defence', 'pass']):
+    def _regen_stamina(self, mod: Literal['hit', 'defence', 'pass', 'skill']):
+        "Рассчет кол-ва стамины после действий юнита"
+
         if mod == 'hit':
             stamina_costs = self.weapon.stamina_per_hit
         elif mod == 'defence':
             stamina_costs = self.armor.stamina_per_turn
         elif mod == 'pass':
             stamina_costs = 0
+        elif mod == 'skill':
+            stamina_costs = self.skill.get_required_stamina
 
         self.stamina -= stamina_costs if self.stamina > stamina_costs else 0
         self.stamina += REGEN_STAMINA_PER_TURN * self.stamina_mod
@@ -98,11 +107,16 @@ class BaseUnit(ABC):
             self.stamina = self.max_stamina
 
     def use_skill(self, target: 'BaseUnit'):
-        pass
+        "Использует специальное умение Юнита"
+
+        result = self.skill.use(self, target)
+        self._regen_stamina('skill')
+        return result
 
     def skip_turn(self):
+        "В свой ход не наносит удар, но восстанавливает силы"
 
-        self._regenerate_stamina('pass')
+        self._regen_stamina('pass')
         return f"{self.name} затаился и выжидает удобного момента для удара"
 
     def __repr__(self):
@@ -149,6 +163,25 @@ class UnitThief(BaseUnit):
         self.stamina = self.max_stamina
 
 
+class UnitPriest(BaseUnit):
+    def __init__(self, name: str = 'Серый Проповедник'):
+        self.name: str = name
+
+        self.unit_type = 'Священник'
+        self.max_health: float = 30
+        self.max_stamina: float = 20
+        self.attack_mod: float = 1.0
+        self.stamina_mod: float = 1.0
+        self.defence_mod: float = 1.0
+
+        self.skill: AbstractSkill = None
+        self.armor: Armor = None
+        self.weapon: Weapon = None
+
+        self.health = self.max_health
+        self.stamina = self.max_stamina
+
+
 class UnitFactory:
     def create(self,
                name: str,
@@ -161,7 +194,7 @@ class UnitFactory:
         elif unit_type == 'thief':
             unit = UnitThief(name)
         elif unit_type == 'priest':
-            pass
+            unit = UnitPriest(name)
         else:
             raise TypeError
 
@@ -169,5 +202,8 @@ class UnitFactory:
             unit.set_weapon(weapon)
         if armor:
             unit.set_armor(armor)
+
+        skill = skill_factory(unit_type)
+        unit.set_skill(skill)
 
         return unit
