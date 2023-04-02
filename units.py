@@ -4,7 +4,7 @@ from typing import Literal
 
 from equipment import Armor, Weapon
 from game_constants import REGEN_STAMINA_PER_TURN
-from skills import AbstractSkill
+from skills import AbstractSkill, skill_factory
 
 
 class BaseUnit(ABC):
@@ -38,6 +38,10 @@ class BaseUnit(ABC):
         return self.health
 
     @property
+    def get_attack_mod(self):
+        return self.attack_mod
+
+    @property
     def is_alife(self) -> bool:
         return True if self.health > 0 else False
 
@@ -66,14 +70,14 @@ class BaseUnit(ABC):
         self._regen_stamina('hit')
         if caused_damage == 0:
             return (f"{self.name} используя {self.weapon.name} "
-                    f"наносит удар, но соперник уворачивается"
+                    f"наносит удар, но соперник уворачивается "
                     f"и не получает урона")
         else:
             return (f"{self.name} используя {self.weapon.name} "
-                    f"пробивает {target.armor.name} соперника и"
-                    f" наносит {caused_damage:.1f} урона")
+                    f"пробивает {target.armor.name} соперника и "
+                    f"наносит {caused_damage:.1f} урона")
 
-    def _get_damage(self, damage):
+    def _get_damage(self, damage: float) -> float:
         "Рассчет кол-ва полученного урона в зависимости от усталости и брони"
 
         if self.stamina < self.armor.stamina_per_turn:
@@ -88,6 +92,15 @@ class BaseUnit(ABC):
 
         self._regen_stamina('defence')
         return get_damage
+
+    def _get_heal(self, heal: float) -> float:
+        "А что если наши герои смогут и получиться в бою? :)"
+
+        hp_before_heal = self.health
+        self.health += heal
+        if self.health > self.max_health:
+            self.health = self.max_health
+        return self.health - hp_before_heal
 
     def _regen_stamina(self, mod: Literal['hit', 'defence', 'pass', 'skill']):
         "Рассчет кол-ва стамины после действий юнита"

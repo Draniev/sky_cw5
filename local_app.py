@@ -12,7 +12,9 @@ if __name__ == '__main__':
 
     unit_factory = UnitFactory()
     user1 = unit_factory.create('Корявый Победум', 'warrior', blade1, armor1)
-    user2 = unit_factory.create('Хитрый Кофтун', 'warrior', blade1, armor1)
+    # user2 = unit_factory.create('Хитрый Кофтун', 'warrior', blade1, armor1)
+    user2 = unit_factory.create(
+        'Святейший Анатолием', 'priest', blade1, armor1)
     arena = BaseArena(user1, user2)
 
     user_input = ""
