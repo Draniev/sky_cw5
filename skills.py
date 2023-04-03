@@ -1,5 +1,11 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from random import choice
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from units import BaseUnit
 
 
 class AbstractSkill(ABC):
@@ -12,14 +18,14 @@ class AbstractSkill(ABC):
     def get_required_stamina(self):
         return self.required_stamina
 
-    def use(self, attacker: 'BaseUnit', target: 'BaseUnit'):
+    def use(self, attacker: BaseUnit, target: BaseUnit):
         if self.required_stamina > attacker._stamina:
             return (f"{attacker.get_name} попробовал применить {self.name} "
                     "но так сильно устал что ничего не получилось")
         return self.skill_effect(attacker, target)
 
     @abstractmethod
-    def skill_effect(self, attacker: 'BaseUnit', target: 'BaseUnit') -> str:
+    def skill_effect(self, attacker: BaseUnit, target: BaseUnit) -> str:
         pass
 
 
@@ -29,7 +35,7 @@ class SkillKick(AbstractSkill):
         self.power = 12
         self.required_stamina = 6
 
-    def skill_effect(self, attacker: 'BaseUnit', target: 'BaseUnit') -> str:
+    def skill_effect(self, attacker: BaseUnit, target: BaseUnit) -> str:
         full_damage = self.power * attacker._attack_mod
         caused_damage = target._take_damage(full_damage)
 
@@ -49,7 +55,7 @@ class SkillPrick(AbstractSkill):
         self.power = 15
         self.required_stamina = 5
 
-    def skill_effect(self, attacker: 'BaseUnit', target: 'BaseUnit') -> str:
+    def skill_effect(self, attacker: BaseUnit, target: BaseUnit) -> str:
         full_damage = self.power * attacker._attack_mod
         caused_damage = target._take_damage(full_damage)
 
@@ -59,7 +65,7 @@ class SkillPrick(AbstractSkill):
                     f"и не получает урона")
         else:
             return (f"{attacker._name} используя {self.name} "
-                    f"пробивает {target.armor.name} соперника и "
+                    f"пробивает {target._armor.name} соперника и "
                     f"наносит {caused_damage:.1f} урона")
 
 
@@ -69,7 +75,7 @@ class SkillPrayer(AbstractSkill):
         self.power = 15
         self.required_stamina = 3
 
-    def skill_effect(self, attacker: 'BaseUnit', target: 'BaseUnit') -> str:
+    def skill_effect(self, attacker: BaseUnit, target: BaseUnit) -> str:
         full_heal = self.power * attacker._attack_mod
         caused_heal = attacker._get_heal(full_heal)
 
