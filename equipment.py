@@ -1,18 +1,21 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Armor:
+class Armor(BaseModel):
     id: int
     name: str
     defence: float
     stamina_per_turn: float
 
 
-@dataclass
-class Weapon:
+class Weapon(BaseModel):
     id: int
     name: str
     min_damage: float
     max_damage: float
     stamina_per_hit: float
+
+
+class Equipment(BaseModel):
+    weapons: list[Weapon]
+    armors: list[Armor]

@@ -12,7 +12,8 @@ class BaseUnit(ABC):
         self._name: str = name
 
         self._skill: AbstractSkill | None = None
-        self._armor: Armor = Armor(0, 'фуфайка', 1, 0.5)
+        self._armor: Armor = Armor(id=0, name='фуфайка',
+                                   defence=1, stamina_per_turn=0.5)
         self._weapon: Weapon | None = None
 
         self._unit_type = 'Человечище'
@@ -34,8 +35,8 @@ class BaseUnit(ABC):
         return self._health
 
     @property
-    def get_hit_damage(self) -> float:
-        "Возвращает силу удара оружием"
+    def _get_hit_damage(self) -> float:
+        "Возвращает силу удара оружием в текущий ход (случайное)"
 
         if not self._weapon:
             return 0
@@ -45,7 +46,7 @@ class BaseUnit(ABC):
         return full_damage
 
     @property
-    def get_defence(self) -> float:
+    def _get_defence(self) -> float:
         "Возвращает силу защиты (плюс/минус 50% от показателя брони)"
 
         random_defence = uniform(self._armor.defence * 0.5,
@@ -96,6 +97,15 @@ class BaseUnit(ABC):
 
         return self._stamina
 
+    def _use_armor(self, damage: float) -> float:
+        "Возвращает кол-во урона, поглощённого бронёй"
+
+        if self._stamina < self._armor.stamina_per_turn:
+            adsorbed_damage = 0
+        else:
+            adsorbed_damage = self._get_defence
+        return adsorbed_damage if adsorbed_damage < damage else damage
+
     def hit(self, target: 'BaseUnit'):
         "Наносит удар по противнику оружием"
 
@@ -104,14 +114,14 @@ class BaseUnit(ABC):
                     "но не вовремя обнаружил что забыл свою шпагу!")
 
         if self._stamina < self._weapon.stamina_per_hit:
-            self._regen_stamina('pass')
+            self._spent_stamina('pass')
             return (f"{self._name} вздернул свой {self._weapon.name}, "
                     "но так устал, что не смог попасть по противнику")
 
-        full_damage = self.get_hit_damage
+        full_damage = self._get_hit_damage
         caused_damage = target._take_damage(full_damage)
 
-        self._regen_stamina('hit')
+        self._spent_stamina('hit')
         if caused_damage == 0:
             return (f"{self._name} используя {self._weapon.name} "
                     f"наносит удар, но соперник уворачивается "
@@ -124,17 +134,9 @@ class BaseUnit(ABC):
     def _take_damage(self, damage: float) -> float:
         "Рассчет кол-ва полученного урона в зависимости от усталости и брони"
 
-        if self._stamina < self._armor.stamina_per_turn:
-            take_damage = damage
-        else:
-            take_damage = damage - self.get_defence
-
-        if take_damage < 0:
-            take_damage = 0
-        else:
-            self._health -= take_damage
-
-        self._regen_stamina('defence')
+        take_damage = damage - self._use_armor(damage)
+        self._change_health(take_damage)
+        self._spent_stamina('defence')
         return take_damage
 
     def _get_heal(self, heal: float) -> float:
@@ -143,13 +145,15 @@ class BaseUnit(ABC):
         hp_before_heal = self._health
         return self._change_health(heal, reduce=False) - hp_before_heal
 
-    def _regen_stamina(self, mod: Literal['hit',
+    def _spent_stamina(self, mod: Literal['hit',
                                           'defence',
                                           'pass',
                                           'skill']) -> float:
         "Рассчет кол-ва стамины после действий юнита"
 
         stamina_costs = 0
+        stamina_before_spent = self._stamina
+
         if mod == 'pass':
             stamina_costs = 0  # На случай если нужна будет балансировка
         elif mod == 'hit' and self._weapon:
@@ -159,11 +163,18 @@ class BaseUnit(ABC):
         elif mod == 'skill' and self._skill:
             stamina_costs = self._skill.get_required_stamina
 
-        stamina_before_regen = self._stamina
-        self._change_stamina(stamina_costs)
-        new_stam = self._change_stamina(REGEN_STAMINA_PER_TURN, reduce=False)
+        new_stamina = self._change_stamina(stamina_costs)
+        # new_stam = self._change_stamina(REGEN_STAMINA_PER_TURN, reduce=False)
 
-        return new_stam - stamina_before_regen
+        return stamina_before_spent - new_stamina
+
+    def regen_stamina(self) -> float:
+        "Регенерация стамины раз в ЦИКЛ, после того как все сделали действие"
+
+        stamina_before_regen = self._stamina
+        new_stamina = self._change_stamina(REGEN_STAMINA_PER_TURN,
+                                           reduce=False)
+        return new_stamina - stamina_before_regen
 
     def use_skill(self, target: 'BaseUnit'):
         "Использует специальное умение Юнита"
@@ -174,13 +185,13 @@ class BaseUnit(ABC):
                       "Боя что оступился и упал")
         else:
             result = self._skill.use(self, target)
-        self._regen_stamina('skill')
+        self._spent_stamina('skill')
         return result
 
     def skip_turn(self):
         "В свой ход не наносит удар, но восстанавливает силы"
 
-        self._regen_stamina('pass')
+        self._spent_stamina('pass')
         return f"{self._name} затаился и выжидает удобного момента для удара"
 
     def __repr__(self):
@@ -193,45 +204,45 @@ class UnitWarrior(BaseUnit):
     def __init__(self, name: str = 'Мимопроходивший Воин'):
         super().__init__(name)
 
-        self.unit_type = 'Воин'
-        self.max_health: float = 60
-        self.max_stamina: float = 30
-        self.attack_mod: float = 0.8
-        self.stamina_mod: float = 0.9
-        self.defence_mod: float = 1.2
+        self._unit_type = 'Воин'
+        self._max_health: float = 60
+        self._max_stamina: float = 30
+        self._attack_mod: float = 0.8
+        self._stamina_mod: float = 0.9
+        self._defence_mod: float = 1.2
 
-        self.health = self.max_health
-        self.stamina = self.max_stamina
+        self._health = self._max_health
+        self._stamina = self._max_stamina
 
 
 class UnitThief(BaseUnit):
     def __init__(self, name: str = 'Скрытный воришка'):
         super().__init__(name)
 
-        self.unit_type = 'Вор'
-        self.max_health: float = 50
-        self.max_stamina: float = 25
-        self.attack_mod: float = 1.5
-        self.stamina_mod: float = 1.2
-        self.defence_mod: float = 1.0
+        self._unit_type = 'Вор'
+        self._max_health: float = 50
+        self._max_stamina: float = 25
+        self._attack_mod: float = 1.5
+        self._stamina_mod: float = 1.2
+        self._defence_mod: float = 1.0
 
-        self.health = self.max_health
-        self.stamina = self.max_stamina
+        self._health = self._max_health
+        self._stamina = self._max_stamina
 
 
 class UnitPriest(BaseUnit):
     def __init__(self, name: str = 'Серый Проповедник'):
         super().__init__(name)
 
-        self.unit_type = 'Священник'
-        self.max_health: float = 30
-        self.max_stamina: float = 20
-        self.attack_mod: float = 1.0
-        self.stamina_mod: float = 1.0
-        self.defence_mod: float = 1.0
+        self._unit_type = 'Священник'
+        self._max_health: float = 30
+        self._max_stamina: float = 20
+        self._attack_mod: float = 1.0
+        self._stamina_mod: float = 1.0
+        self._defence_mod: float = 1.0
 
-        self.health = self.max_health
-        self.stamina = self.max_stamina
+        self._health = self._max_health
+        self._stamina = self._max_stamina
 
 
 class UnitFactory:
