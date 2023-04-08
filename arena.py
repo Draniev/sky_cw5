@@ -10,6 +10,7 @@ class BaseArena:
         self.units: list[BaseUnit] = [*args]
         self._current_attacker: int = 0
         self._current_target: int = 1
+        self._round: int = 0
 
         if len(self.units) < 2:
             raise TypeError
@@ -38,8 +39,14 @@ class BaseArena:
         return result
 
     def _change_current(self):
+        "Переход хода к следующему юниту. Задел на возможность массовой драки."
         max_index = len(self.units) - 1
         self._current_attacker = circle_count(max_index,
                                               self._current_attacker)
         self._current_target = circle_count(max_index,
                                             self._current_target)
+        # Если цикл хода вернулся к началу, значит раунд закончился
+        if self._current_attacker == 0:
+            self._round += 1
+            self.get_attacker.regen_stamina()
+            self.get_target.regen_stamina()
