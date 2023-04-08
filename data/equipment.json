@@ -5,14 +5,14 @@
     "name": "топорик",
     "min_damage": 6.5,
     "max_damage": 8.1,
-    "stamina_per_hit": 8
+    "stamina_per_hit": 4
   },
   {
     "id": 2,
     "name": "ножик",
     "min_damage": 3.2,
     "max_damage": 7.5,
-    "stamina_per_hit": 3
+    "stamina_per_hit": 2.5
   },
   {
   "id": 3,
@@ -26,7 +26,7 @@
   "name": "простой клинок",
   "max_damage": 2.5,
   "min_damage": 7.5,
-  "stamina_per_hit": 4
+  "stamina_per_hit": 3
   }
 ],
   "armors": [

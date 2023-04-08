@@ -221,8 +221,8 @@ class UnitWarrior(BaseUnit):
         self._unit_type = 'Воин'
         self._max_health: float = 60
         self._max_stamina: float = 30
-        self._attack_mod: float = 0.8
-        self._stamina_mod: float = 0.9
+        self._attack_mod: float = 2.9
+        self._stamina_mod: float = 0.8
         self._defence_mod: float = 1.2
 
         self._health = self._max_health

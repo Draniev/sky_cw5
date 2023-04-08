@@ -51,6 +51,7 @@ class BaseArena:
                                             self._current_target)
         # Если цикл хода вернулся к началу, значит раунд закончился
         if self._current_attacker == 0:
+            logger.debug('======')
             logger.debug(f'====== ROUND #{self._round} is over ======')
             self._round += 1
             self.get_attacker.regen_stamina()
