@@ -3,9 +3,9 @@ from random import choice
 
 from art import tprint
 
-from arena import BaseArena
+from arena.arena import BaseArena
+from arena.units import UnitFactory
 from load_data import equipment
-from units import UnitFactory
 
 logger = logging.getLogger('arena')
 console_handler = logging.StreamHandler()

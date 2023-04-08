@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from equipment import Equipment
+from arena.equipment import Equipment
 
 path: Path = Path('data/equipment.json')
 try:
