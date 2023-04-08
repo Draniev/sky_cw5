@@ -1,3 +1,4 @@
+import logging
 from abc import ABC
 from random import uniform
 from typing import Literal
@@ -5,6 +6,8 @@ from typing import Literal
 from equipment import Armor, Weapon
 from game_constants import REGEN_STAMINA_PER_TURN
 from skills import AbstractSkill, skill_factory
+
+logger = logging.getLogger('arena')
 
 
 class BaseUnit(ABC):
@@ -71,6 +74,7 @@ class BaseUnit(ABC):
         """Изменяет значение жизни на health, но не более MAX
            По умолчанию: уменьшает, чтобы увеличить: reduce = False
         """
+        hp_before_change = self._health
         if reduce:
             self._health -= health
             if self._health < 0:
@@ -80,12 +84,15 @@ class BaseUnit(ABC):
             if self._health > self._max_health:
                 self._health = self._max_health
 
+        logger.debug(f'CHANGE {self.get_name} '
+                     f'HP:{hp_before_change:.1f}->{self._health:.1f}')
         return self._health
 
     def _change_stamina(self, stamina: float, reduce: bool = True) -> float:
         """Изменяет значение жизни на stamina, но не более MAX
            По умолчанию: уменьшает, чтобы увеличить: reduce = False
         """
+        st_before_change = self._stamina
         if reduce:
             self._stamina -= stamina
             if self._stamina < 0:
@@ -95,6 +102,8 @@ class BaseUnit(ABC):
             if self._stamina > self._max_stamina:
                 self._stamina = self._max_stamina
 
+        logger.debug(f'CHANGE {self.get_name} '
+                     f'ST:{st_before_change:.1f}->{self._stamina:.1f}')
         return self._stamina
 
     def _use_armor(self, damage: float) -> float:
@@ -166,6 +175,8 @@ class BaseUnit(ABC):
         new_stamina = self._change_stamina(stamina_costs)
         # new_stam = self._change_stamina(REGEN_STAMINA_PER_TURN, reduce=False)
 
+        logger.debug(f'SPENT {self.get_name} '
+                     f'ST:{stamina_before_spent:.1f}->{new_stamina:.1f}')
         return stamina_before_spent - new_stamina
 
     def regen_stamina(self) -> float:
@@ -174,6 +185,9 @@ class BaseUnit(ABC):
         stamina_before_regen = self._stamina
         new_stamina = self._change_stamina(REGEN_STAMINA_PER_TURN,
                                            reduce=False)
+
+        logger.debug(f'REGEN {self.get_name} '
+                     f'ST:{stamina_before_regen:.1f}->{new_stamina:.1f}')
         return new_stamina - stamina_before_regen
 
     def use_skill(self, target: 'BaseUnit'):

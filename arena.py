@@ -1,4 +1,8 @@
+import logging
+
 from units import BaseUnit
+
+logger = logging.getLogger('arena')
 
 
 def circle_count(max_count: int, current: int):
@@ -47,6 +51,8 @@ class BaseArena:
                                             self._current_target)
         # Если цикл хода вернулся к началу, значит раунд закончился
         if self._current_attacker == 0:
+            logger.debug(f'====== ROUND #{self._round} is over ======')
             self._round += 1
             self.get_attacker.regen_stamina()
             self.get_target.regen_stamina()
+            logger.debug(f'====== ROUND #{self._round} has begun ======')

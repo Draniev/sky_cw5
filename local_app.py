@@ -1,3 +1,4 @@
+import logging
 from random import choice
 
 from art import tprint
@@ -5,6 +6,13 @@ from art import tprint
 from arena import BaseArena
 from load_data import equipment
 from units import UnitFactory
+
+logger = logging.getLogger('arena')
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter('[%(levelname)s] %(message)s')
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+logger.setLevel('DEBUG')
 
 if __name__ == '__main__':
     tprint("battle", font="univerce")
