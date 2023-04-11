@@ -1,7 +1,7 @@
 from flask import Flask
 
 from .config import Config
-from .setup_db import db
+from .setup.db import db
 from .views import main_blueprint
 
 
