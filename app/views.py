@@ -12,9 +12,11 @@ def page_index():
 
 @main_blueprint.route('/choose-hero/')
 def page_make_heroes():
-    return render_template('hero_choosing.html')
+    # return render_template('hero_choosing.html')
+    return "Тут будет выбор персонажей"
 
 
 @main_blueprint.route('/fight/')
 def page_fight():
-    return render_template('fight.html')
+    # return render_template('fight.html')
+    return "Тут будет бой персонажей"
