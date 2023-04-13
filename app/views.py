@@ -12,8 +12,14 @@ def page_index():
 
 @main_blueprint.route('/choose-hero/')
 def page_make_heroes():
-    # return render_template('hero_choosing.html')
-    return "Тут будет выбор персонажей"
+
+    result = {'header': "Выберете характеристики своего героя",
+              'classes': ['warrior', 'thief', 'priest'],
+              'armors': [],
+              'weapons': []
+              }
+    return render_template('hero_choosing.html', result=result)
+    # return "Тут будет выбор персонажей"
 
 
 @main_blueprint.route('/fight/')
