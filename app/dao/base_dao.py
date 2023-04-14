@@ -18,8 +18,13 @@ class BaseDAO(Generic[T]):
         return self.session.get(self.__model__, uid)
 
     def get_all(self) -> list[T]:
-        stmt: Query = self.session.execute(select(self.__model__)).scalars()
+        stmt = self.session.scalars(select(self.__model__))
         return stmt.all()
+
+    def get_by_name(self, name) -> T | None:
+        stmt = select(self.__model__).where(self.__model__.name == name)
+        result = self.session.scalars(stmt)
+        return result.first()
 
     def create(self, entity_data: dict) -> T:
         entity = self.__model__(**entity_data)

@@ -6,8 +6,11 @@ class ArmorService():
     def __init__(self, armor_dao: ArmorDAO) -> None:
         self.armor_dao = armor_dao
 
-    def load_all(self) -> list[ArmorModel]:
+    def get_all(self) -> list[ArmorModel]:
         return self.armor_dao.get_all()
 
-    def load_id(self, id: int) -> ArmorModel:
+    def get_by_id(self, id: int) -> ArmorModel:
         return self.armor_dao.get_one(id)
+
+    def get_by_name(self, name: str) -> ArmorModel:
+        return self.armor_dao.get_by_name(name)

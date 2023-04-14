@@ -16,8 +16,10 @@ class BaseArena:
         self._current_target: int = 1
         self._round: int = 0
 
-        if len(self.units) < 2:
-            raise TypeError
+        # TODO: Сделать unit1 и unit2
+        # TODO: Перенести мэйк а мув в юнит?
+        # if len(self.units) < 2:
+        #     raise TypeError
 
     @property
     def get_attacker(self) -> BaseUnit:
@@ -26,6 +28,9 @@ class BaseArena:
     @property
     def get_target(self) -> BaseUnit:
         return self.units[self._current_target]
+
+    def set_unit(self, unit: BaseUnit):
+        self.units.append(unit)
 
     def make_a_move(self, move_type: str) -> str:
         attacker = self.get_attacker
