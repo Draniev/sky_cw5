@@ -1,9 +1,10 @@
 import logging
 from random import choice
+from typing import Literal
 
 from art import tprint
 
-from arena.arena import BaseArena
+from arena.arena import BaseArena, UNITS, ACTIONS
 from arena.units import UnitFactory
 from load_data import equipment
 
@@ -14,13 +15,21 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 logger.setLevel('DEBUG')
 
+
+def choose_action(name: str):
+    action = ''
+    while action not in (ACTIONS, Literal['exit']):
+        action = input(f"\n{name}: Сделайте ход (hit, pass, feat) "
+                       f"или (stop, status): ")
+        if user_input in ('status', 'статус'):
+            print(user1)
+            print(user2)
+        return action
+
+
 if __name__ == '__main__':
     tprint("battle", font="univerce")
 
-    # blade1 = Weapon(id=1, name='Простой клинок',
-    #                 min_damage=2.5, max_damage=6.5,
-    #                 stamina_per_hit=2)
-    # armor1 = Armor(id=1, name='Кольчужка', defence=3, stamina_per_turn=1)
     blade1 = choice(equipment.weapons)
     blade2 = choice(equipment.weapons)
     armor1 = choice(equipment.armors)
@@ -28,21 +37,22 @@ if __name__ == '__main__':
 
     unit_factory = UnitFactory()
     user1 = unit_factory.create('Корявый Победум', 'warrior', blade1, armor1)
-    # user2 = unit_factory.create('Хитрый Кофтун', 'warrior', blade1, armor1)
     user2 = unit_factory.create(
         'Святейший Анатолием', 'priest', blade2, armor2)
-    arena = BaseArena(user1, user2)
+    arena = BaseArena()
+    arena.set_unit('hero', user1)
+    arena.set_unit('enemy', user2)
+    arena.start_arena()
 
     user_input = ""
-    while user_input not in ('exit', 'stop', 'стоп'):
-        user_input = input(
-            "\nСделайте ход (hit, pass, feat) или stop|status: ")
-        if user_input in ('status', 'статус', 'exit', 'stop', 'стоп'):
-            print(user1)
-            print(user2)
-        else:
-            try:
-                res = arena.make_a_move(user_input)
-                print(res)
-            except Exception as e:
-                print(f"Error: {e}")
+
+    while arena.is_battle_going_on:
+        u1_action = choose_action(user1.get_name)
+        arena.set_action('hero', u1_action)
+
+        u2_action = choose_action(user2.get_name)
+        arena.set_action('enemy', u2_action)
+
+        log = arena.fight_cur_round()
+        for item in log:
+            print(item)
