@@ -1,9 +1,10 @@
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, render_template, request, redirect
 
 from arena.equipment import Armor, Weapon
 
 from .container import armor_service, unit_factory, weapon_service, arena
 from .utils import names_list
+from .npc_logic import npc_choose_action
 
 main_blueprint = Blueprint('main_blueprint',
                            __name__,
@@ -12,6 +13,7 @@ main_blueprint = Blueprint('main_blueprint',
 
 @main_blueprint.route('/')
 def page_index():
+    arena.get_clean()
     return render_template('index.html')
 
 
@@ -47,10 +49,52 @@ def page_make_heroes():
                                Weapon.from_orm(weapon),
                                Armor.from_orm(armor)
                                )
-    return f"{weapon.name} {armor.name} {unit}"
+    if request.path == '/choose-hero/':
+        arena.set_unit('hero', unit)
+        return redirect(location='/choose-enemy/')
+    else:
+        arena.set_unit('enemy', unit)
+        arena.start()
+        return redirect(location='/fight/')
 
 
-@main_blueprint.route('/fight/')
+@main_blueprint.route('/fight/', methods=['GET'])
 def page_fight():
-    # return render_template('fight.html')
-    return "Тут будет бой персонажей"
+    battle_log = arena.log.get_plain_log()
+    return render_template('fight.html', arena=arena, battle_log=battle_log)
+
+
+@main_blueprint.route('/fight/hit/', methods=['GET'])
+def page_fight_hit():
+    arena.set_action('hero', 'hit')
+    enemy_action = npc_choose_action(arena._units['enemy'])
+    arena.set_action('enemy', enemy_action)
+    arena.fight_cur_round()
+    return redirect(location='/fight/')
+
+
+@main_blueprint.route('/fight/use-skill/', methods=['GET'])
+def page_fight_use_skill():
+    arena.set_action('hero', 'feat')
+    enemy_action = npc_choose_action(arena._units['enemy'])
+    arena.set_action('enemy', enemy_action)
+    arena.fight_cur_round()
+    return redirect(location='/fight/')
+
+
+@main_blueprint.route('/fight/pass-turn/', methods=['GET'])
+def page_fight_pass_turn():
+    arena.set_action('hero', 'pass')
+    enemy_action = npc_choose_action(arena._units['enemy'])
+    arena.set_action('enemy', enemy_action)
+    arena.fight_cur_round()
+    return redirect(location='/fight/')
+
+
+@main_blueprint.route('/fight/end-fight/', methods=['GET'])
+def page_fight_end_fight():
+    arena.force_stop()
+    arena.fight_cur_round()
+    return redirect(location='/fight/')
+
+
