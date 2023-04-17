@@ -13,18 +13,25 @@ console_handler = logging.StreamHandler()
 formatter = logging.Formatter('[%(levelname)s] %(message)s')
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
-logger.setLevel('DEBUG')
+logger.setLevel('INFO')
 
 
-def choose_action(name: str):
-    action = ''
-    while action not in (ACTIONS, Literal['exit']):
-        action = input(f"\n{name}: Сделайте ход (hit, pass, feat) "
-                       f"или (stop, status): ")
-        if user_input in ('status', 'статус'):
-            print(user1)
-            print(user2)
+def choose_action(name: str) -> str:
+    if arena.is_battle_going_on:
+        action = ''
+        while action not in ('hit', 'pass', 'feat'):
+            action = input(f"{name}: Сделайте ход (hit, pass, feat) "
+                           f"или (stop, status): ")
+            if action in ('status', 'статус'):
+                print(user1)
+                print(user2)
+            if action in ('exit', 'close', 'end', 'stop'):
+                rec = arena.force_stop()
+                # arena.log.add_record(rec)
+                return action
         return action
+    else:
+        return "exit"
 
 
 if __name__ == '__main__':
@@ -42,11 +49,13 @@ if __name__ == '__main__':
     arena = BaseArena()
     arena.set_unit('hero', user1)
     arena.set_unit('enemy', user2)
-    arena.start_arena()
+    arena.start()
 
     user_input = ""
 
     while arena.is_battle_going_on:
+        print(f'\nРаунд {arena._round}')
+
         u1_action = choose_action(user1.get_name)
         arena.set_action('hero', u1_action)
 

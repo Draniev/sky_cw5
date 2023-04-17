@@ -13,6 +13,7 @@ class AbstractSkill(ABC):
         self.name = 'Базовый'
         self.power: float = 0
         self.required_stamina: float = 0
+        self.regen_count: int = 5
 
     @property
     def get_required_stamina(self):
@@ -34,6 +35,7 @@ class SkillKick(AbstractSkill):
         self.name = 'Свирепый Пинок'
         self.power = 12
         self.required_stamina = 6
+        self.regen_count = 5
 
     def skill_effect(self, attacker: BaseUnit, target: BaseUnit) -> str:
         full_damage = self.power * attacker._attack_mod
@@ -54,6 +56,7 @@ class SkillPrick(AbstractSkill):
         self.name = 'Мощный Укол'
         self.power = 15
         self.required_stamina = 5
+        self.regen_count = 4
 
     def skill_effect(self, attacker: BaseUnit, target: BaseUnit) -> str:
         full_damage = self.power * attacker._attack_mod
@@ -74,6 +77,7 @@ class SkillPrayer(AbstractSkill):
         self.name = 'Молитва Господу'
         self.power = 15
         self.required_stamina = 3
+        self.regen_count = 3
 
     def skill_effect(self, attacker: BaseUnit, target: BaseUnit) -> str:
         full_heal = self.power * attacker._attack_mod

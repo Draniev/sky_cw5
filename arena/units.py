@@ -28,6 +28,7 @@ class BaseUnit(ABC):
 
         self._health = self._max_health
         self._stamina = self._max_stamina
+        self._is_skill_not_ready = 0    # Когда 0 то можно пользоваться умением
 
     @property
     def get_name(self) -> str:
@@ -38,8 +39,13 @@ class BaseUnit(ABC):
         return self._health
 
     @property
+    def is_skill_ready(self) -> bool:
+        """Проверяет, перезарядилось ли уже умение"""
+        return not self._is_skill_not_ready
+
+    @property
     def _get_hit_damage(self) -> float:
-        "Возвращает силу удара оружием в текущий ход (случайное)"
+        """Возвращает силу удара оружием в текущий ход (случайное)"""
 
         if not self._weapon:
             return 0
@@ -50,7 +56,7 @@ class BaseUnit(ABC):
 
     @property
     def _get_defence(self) -> float:
-        "Возвращает силу защиты (плюс/минус 50% от показателя брони)"
+        """Возвращает силу защиты (плюс/минус 50% от показателя брони)"""
 
         random_defence = uniform(self._armor.defence * 0.5,
                                  self._armor.defence * 1.5)
@@ -179,8 +185,11 @@ class BaseUnit(ABC):
                      f'ST:{stamina_before_spent:.1f}->{new_stamina:.1f}')
         return stamina_before_spent - new_stamina
 
+    def _start_skill_regen(self):
+        self._is_skill_not_ready = self._skill.regen_count
+
     def regen_stamina(self) -> float:
-        "Регенерация стамины раз в ЦИКЛ, после того как все сделали действие"
+        """Регенерация стамины раз в ЦИКЛ, после того как все сделали действие"""
 
         stamina_before_regen = self._stamina
         new_stamina = self._change_stamina(REGEN_STAMINA_PER_TURN,
@@ -190,8 +199,16 @@ class BaseUnit(ABC):
                      f'ST:{stamina_before_regen:.1f}->{new_stamina:.1f}')
         return new_stamina - stamina_before_regen
 
+    def regen_skill(self) -> int:
+        """Регенерация возможности использовать умение"""
+        if self._is_skill_not_ready == 0:
+            return 0
+        else:
+            self._is_skill_not_ready -= 1
+            return 1
+
     def use_skill(self, target: 'BaseUnit'):
-        "Использует специальное умение Юнита"
+        """Использует специальное умение Юнита"""
 
         if not self._skill:
             result = (f"{self._name} хотел было воспользоваться каким то "
@@ -200,10 +217,11 @@ class BaseUnit(ABC):
         else:
             result = self._skill.use(self, target)
         self._spent_stamina('skill')
+        self._start_skill_regen()
         return result
 
     def skip_turn(self):
-        "В свой ход не наносит удар, но восстанавливает силы"
+        """В свой ход не наносит удар, но восстанавливает силы"""
 
         self._spent_stamina('pass')
         return f"{self._name} затаился и выжидает удобного момента для удара"
