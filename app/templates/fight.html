@@ -28,7 +28,9 @@
             <button type="button" onclick="window.location.href='/fight/pass-turn/'" class="btn btn-warning m-2">Пропустить ход</button></br>
             <button type="button" onclick="window.location.href='/fight/end-fight/'" class="btn btn-secondary m-2">Завершить бой</button>
             {% else %}
-            <button type="button" onclick="window.location.href='/save-results/'" class="btn btn-secondary m-2">Сохранить результат</button>
+              {% if arena.winner %}
+              <button type="button" onclick="window.location.href='/save-results/'" class="btn btn-secondary m-2">Сохранить результат</button>
+              {% endif %}
             <button type="button" onclick="window.location.href='/hall-of-fame/'" class="btn btn-secondary m-2">Посетить Реестр побоищ</button>
             {% endif %}
           </div>
