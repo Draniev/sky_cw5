@@ -15,7 +15,7 @@ hall_of_fame_dao = HallOfFameDAO(db.session)
 
 armor_service = ArmorService(armor_dao)
 weapon_service = WeaponService(weapon_dao)
-hall_of_fame_dao = HallOfFameService(hall_of_fame_dao)
+hall_of_fame_service = HallOfFameService(hall_of_fame_dao)
 
 unit_factory = UnitFactory()
 arena = BaseArena()
