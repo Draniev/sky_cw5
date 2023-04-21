@@ -2,7 +2,7 @@ from ..dao.hall_of_fame import HallOfFameDAO
 from ..dao.models.hall_of_fame import HallOfFameModel
 
 
-class HallOfFameService():
+class HallOfFameService:
     def __init__(self, hall_of_fame_dao: HallOfFameDAO) -> None:
         self.hall_of_fame_dao = hall_of_fame_dao
 
