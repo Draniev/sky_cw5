@@ -18,8 +18,8 @@
             <hr>
             <p><em>Информация:</em></p>
             <hr>
-            <p>Очки здоровья: {{ arena._units['hero']._health }}/{{ arena._units['hero']._max_health }}
-              </br> Очки выносливости: {{ arena._units['hero']._stamina }}/{{ arena._units['hero']._max_stamina }}</p>
+            <p>Очки здоровья: {{ arena._units['hero']._health | round(2) }}/{{ arena._units['hero']._max_health }}
+              </br> Очки выносливости: {{ arena._units['hero']._stamina | round(2) }}/{{ arena._units['hero']._max_stamina }}</p>
           </div>
           <div class="col align-self-center">
             {% if arena.is_battle_going_on %}
@@ -43,8 +43,8 @@
             <hr>
             <p><em>Информация:</em></p>
             <hr>
-            <p>Очки здоровья: {{ arena._units['enemy']._health }}/{{ arena._units['enemy']._max_health }}
-              </br> Очки выносливости: {{ arena._units['enemy']._stamina }}/{{ arena._units['enemy']._max_stamina }}</p>
+            <p>Очки здоровья: {{ arena._units['enemy']._health | round(2) }}/{{ arena._units['enemy']._max_health }}
+              </br> Очки выносливости: {{ arena._units['enemy']._stamina | round(2) }}/{{ arena._units['enemy']._max_stamina }}</p>
           </div>
         </div>
       </div>
