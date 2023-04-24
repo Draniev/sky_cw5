@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+    image: sergeipopov/cw5
+    ports: 
+      - 80:8080
+    volumes:
+      - ./instance:/home/app/instance
+    depends_on:
+      pg:
+        condition: service_healthy
+
+  pg:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: cw5_db_password
+      POSTGRES_DB: cw5_db
+    volumes:
+      - ../cw5_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
+
