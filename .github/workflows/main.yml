@@ -35,8 +35,8 @@ jobs:
         with: 
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          username: ${{ secrets.SSH_LOGIN }}
+          key: ${{ secrets.SSH_KEY }}
           source: "deploy/docker-compose.yaml"
           target: "cw5_docker"
           strip_components: 1
@@ -45,8 +45,8 @@ jobs:
         with: 
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          username: ${{ secrets.SSH_LOGIN }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             cd flask-app
             echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose up -d
