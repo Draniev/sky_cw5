@@ -48,8 +48,8 @@ jobs:
           username: ${{ secrets.SSH_LOGIN }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd flask-app
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker-compose up -d
+            cd cw5_docker
+            docker compose up -d
           
 
 
